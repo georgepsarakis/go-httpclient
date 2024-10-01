@@ -52,9 +52,3 @@ func TestClient_Get_JSON(t *testing.T) {
 	require.NoError(t, DeserializeJSON(resp, &v))
 	require.JSONEq(t, responseBody, string(MustInterceptResponseBody(resp)))
 }
-
-func printJSON(t *testing.T, v any) {
-	b, err := json.MarshalIndent(v, "", "  ")
-	require.NoError(t, err)
-	t.Log(string(b))
-}
