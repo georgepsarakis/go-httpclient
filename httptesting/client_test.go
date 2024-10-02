@@ -44,13 +44,15 @@ func TestClient_Head(t *testing.T) {
 	c.Client.WithDefaultHeaders(map[string]string{"Content-Type": "application/json"})
 	c.NewMockRequest(http.MethodHead, requestURL+"?test=1",
 		httpclient.WithHeaders(map[string]string{"Content-Type": "application/json"})).
-		RespondWithJSON(http.StatusOK, `{"name": "hello", "surname": "world"}`).Register()
+		RespondWithJSON(http.StatusOK, `{"name": "hello", "surname": "world"}`).
+		RespondWithHeaders(map[string]string{"Content-Type": "application/json"}).
+		Register()
 	resp, err := c.Head(context.Background(),
 		requestURL,
 		httpclient.WithQueryParameters(map[string]string{"test": "1"}))
 	require.NoError(t, err)
 	reqHeaders := http.Header{}
-	reqHeaders.Set("Content-Type", "application/json")
+	reqHeaders.Set("Accept", "application/json")
 	httpassert.ResponseEqual(t, resp, &http.Response{
 		StatusCode: http.StatusOK,
 		Request: &http.Request{

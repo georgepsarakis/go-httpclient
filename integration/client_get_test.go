@@ -2,12 +2,12 @@ package integration
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/georgepsarakis/go-httpclient"
+	"github.com/georgepsarakis/go-httpclient/httpassert"
 )
 
 func TestClient_Get_JSON(t *testing.T) {
@@ -16,7 +16,7 @@ func TestClient_Get_JSON(t *testing.T) {
 	require.NoError(t, err)
 	v := map[string]interface{}{}
 	require.NoError(t, httpclient.DeserializeJSON(resp, &v))
-	printJSON(t, v)
+	httpassert.PrintJSON(t, v)
 }
 
 func githubClient(t *testing.T) *httpclient.Client {
@@ -26,12 +26,6 @@ func githubClient(t *testing.T) *httpclient.Client {
 		WithBaseURL("https://api.github.com")
 	require.NoError(t, err)
 	return c
-}
-
-func printJSON(t *testing.T, v any) {
-	b, err := json.MarshalIndent(v, "", "  ")
-	require.NoError(t, err)
-	t.Log(string(b))
 }
 
 func TestClient_Get_JSON_ContextDeadline(t *testing.T) {

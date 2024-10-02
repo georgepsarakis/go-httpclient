@@ -70,12 +70,14 @@ func InterceptRequestBody(r *http.Request) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	r.Body.Close()
+	if err := r.Body.Close(); err != nil {
+		return nil, err
+	}
 	r.Body = io.NopCloser(bytes.NewReader(body))
 	return body, nil
 }
 
-func MustInterceptRequestBody(r *http.Request, body []byte) []byte {
+func MustInterceptRequestBody(r *http.Request) []byte {
 	b, err := InterceptRequestBody(r)
 	if err != nil {
 		panic(err)

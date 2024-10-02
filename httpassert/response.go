@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,16 +18,21 @@ func ResponseEqual(t *testing.T, actual, expected *http.Response) {
 	if expected.Header != nil {
 		assert.Equal(t, expected.Header, actual.Header)
 	}
-	expectedBody, err := io.ReadAll(expected.Body)
-	require.NoError(t, err)
-	expected.Body.Close()
-	actualBody, err := io.ReadAll(actual.Body)
-	require.NoError(t, err)
-	actual.Body.Close()
-	// Restore the body stream in order to allow multiple assertions
-	actual.Body = io.NopCloser(bytes.NewBuffer(actualBody))
-	assert.JSONEq(t, string(expectedBody), string(actualBody))
-
+	if expected.Body != nil {
+		expectedBody, err := io.ReadAll(expected.Body)
+		require.NoError(t, err)
+		expected.Body.Close()
+		actualBody, err := io.ReadAll(actual.Body)
+		require.NoError(t, err)
+		actual.Body.Close()
+		// Restore the body stream in order to allow multiple assertions
+		actual.Body = io.NopCloser(bytes.NewBuffer(actualBody))
+		if strings.HasPrefix(actual.Header.Get("Content-Type"), "application/json") {
+			assert.JSONEq(t, string(expectedBody), string(actualBody))
+		} else {
+			assert.Equal(t, string(expectedBody), string(actualBody))
+		}
+	}
 	if expected.Request != nil {
 		assert.Equal(t, expected.Request.URL, actual.Request.URL)
 		assert.Equal(t, expected.Request.Method, actual.Request.Method)

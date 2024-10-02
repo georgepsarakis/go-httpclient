@@ -1,10 +1,14 @@
 package httpclient
 
 import (
+	"io"
+	"net/http"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWithQueryParameters(t *testing.T) {
@@ -56,4 +60,43 @@ func TestWithQueryParameters(t *testing.T) {
 			assert.Equal(t, tt.want, opts.QueryParameters())
 		})
 	}
+}
+
+func TestMustInterceptRequestBody(t *testing.T) {
+	require.Panics(t, func() {
+		MustInterceptRequestBody(&http.Request{Body: failureOnReadReader{}})
+	})
+	require.Panics(t, func() {
+		MustInterceptRequestBody(&http.Request{Body: failureOnCloseReader{}})
+	})
+
+	req := &http.Request{Body: io.NopCloser(strings.NewReader("test"))}
+	require.Equal(t, []byte("test"), MustInterceptRequestBody(req))
+	b, err := io.ReadAll(req.Body)
+	require.NoError(t, err)
+	require.Equal(t, []byte("test"), b)
+}
+
+type failureOnReadReader struct {
+	io.ReadCloser
+}
+
+func (f failureOnReadReader) Read(_ []byte) (n int, err error) {
+	return 0, io.ErrUnexpectedEOF
+}
+
+func (f failureOnReadReader) Close() error {
+	return nil
+}
+
+type failureOnCloseReader struct {
+	io.ReadCloser
+}
+
+func (f failureOnCloseReader) Read(_ []byte) (n int, err error) {
+	return 0, io.EOF
+}
+
+func (f failureOnCloseReader) Close() error {
+	return io.ErrClosedPipe
 }

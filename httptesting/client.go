@@ -126,6 +126,15 @@ func (r *MockRequest) RespondWithJSON(statusCode int, body string) *MockRequest 
 	return r
 }
 
+func (r *MockRequest) RespondWithHeaders(respHeaders map[string]string) *MockRequest {
+	h := http.Header{}
+	for k, v := range respHeaders {
+		h.Set(k, v)
+	}
+	r.responder.HeaderSet(h)
+	return r
+}
+
 func (c *Client) NewJSONBodyMatcher(body string) httpmock.MatcherFunc {
 	c.t.Helper()
 
