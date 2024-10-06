@@ -1,6 +1,8 @@
 # go-httpclient
 
-## Summary
+[![Go Reference](https://pkg.go.dev/badge/github.com/georgepsarakis/go-httpclient.svg)](https://pkg.go.dev/github.com/georgepsarakis/go-httpclient)
+
+## Overview
 
 **go-httpclient** aims to reduce the boilerplate of HTTP request/response
 setup for Go, along with providing out-of-the-box testing in a standardized way.
