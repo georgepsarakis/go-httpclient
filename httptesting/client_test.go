@@ -68,3 +68,10 @@ func TestClient_Head(t *testing.T) {
 		StatusCode: http.StatusOK,
 	})
 }
+
+func TestClient_WithBaseURL(t *testing.T) {
+	c := NewClient(t)
+	c, err := c.WithBaseURL("http://www.example.com/test")
+	require.NoError(t, err)
+	require.Equal(t, "http://www.example.com/test", c.BaseURL())
+}

@@ -28,6 +28,8 @@ func ResponseEqual(t *testing.T, actual, expected *http.Response) {
 		// Restore the body stream in order to allow multiple assertions
 		actual.Body = io.NopCloser(bytes.NewBuffer(actualBody))
 		mediatype, _, err := mime.ParseMediaType(actual.Header.Get("Content-Type"))
+		require.NoError(t, err)
+
 		if mediatype == "application/json" {
 			assert.JSONEq(t, string(expectedBody), string(actualBody))
 		} else {

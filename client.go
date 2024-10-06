@@ -70,6 +70,10 @@ func (c *Client) WithBaseURL(baseURL string) (*Client, error) {
 	return c, nil
 }
 
+func (c *Client) BaseURL() string {
+	return c.baseURL.String()
+}
+
 func (c *Client) WithJSONContentType() *Client {
 	return c.WithDefaultHeaders(map[string]string{"Content-Type": "application/json"})
 }
