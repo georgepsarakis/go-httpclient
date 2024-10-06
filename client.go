@@ -74,8 +74,9 @@ func (c *Client) BaseURL() string {
 	return c.baseURL.String()
 }
 
+// WithJSONContentType sets the Content-Type default header to `application/json; charset=utf-8`.
 func (c *Client) WithJSONContentType() *Client {
-	return c.WithDefaultHeaders(map[string]string{"Content-Type": "application/json"})
+	return c.WithDefaultHeaders(map[string]string{"Content-Type": "application/json; charset=utf-8"})
 }
 
 func (c *Client) Get(ctx context.Context, url string, parameters ...RequestParameter) (*http.Response, error) {
@@ -87,10 +88,6 @@ func (c *Client) Get(ctx context.Context, url string, parameters ...RequestParam
 }
 
 func (c *Client) prepareRequest(ctx context.Context, method string, rawURL string, body io.Reader, parameters ...RequestParameter) (*http.Request, error) {
-	var reqParams []RequestParameter
-	reqParams = append(reqParams, WithHeaders(c.defaultHeaders))
-	reqParams = append(reqParams, parameters...)
-	params := NewRequestParameters(reqParams...)
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -101,12 +98,15 @@ func (c *Client) prepareRequest(ctx context.Context, method string, rawURL strin
 	} else {
 		fullURL = parsedURL
 	}
-	req, err := http.NewRequestWithContext(ctx, method, fullURL.String(), body)
+	finalURL := fullURL.String()
+	var reqParams []RequestParameter
+	reqParams = append(reqParams, WithHeaders(c.defaultHeaders))
+	reqParams = append(reqParams, parameters...)
+
+	req, err := NewRequest(ctx, method, finalURL, body, reqParams...)
 	if err != nil {
 		return nil, err
 	}
-	req.Header = params.headers
-	req.URL.RawQuery += params.queryParams.Encode()
 	return req, nil
 }
 

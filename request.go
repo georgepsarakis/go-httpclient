@@ -2,6 +2,7 @@ package httpclient
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"net/url"
@@ -16,13 +17,17 @@ type RequestParameters struct {
 	errorCodes []int
 }
 
+// QueryParameters returns a clone of the currently configured query parameters.
+// Multiple calls will override already existing keys.
 func (rp *RequestParameters) QueryParameters() url.Values {
 	if rp.queryParams == nil {
 		return nil
 	}
 	qp := make(url.Values, len(rp.queryParams))
 	for k, v := range rp.queryParams {
-		qp[k] = v
+		for _, qv := range v {
+			qp.Add(k, qv)
+		}
 	}
 	return qp
 }
@@ -35,6 +40,8 @@ func (rp *RequestParameters) ErrorCodes() []int {
 	return rp.errorCodes
 }
 
+// WithQueryParameters configures the given name-value pairs as Query String parameters for the request.
+// Multiple calls will override values for existing keys.
 func WithQueryParameters(params map[string]string) RequestParameter {
 	return func(opts *RequestParameters) {
 		if opts.queryParams == nil {
@@ -46,6 +53,8 @@ func WithQueryParameters(params map[string]string) RequestParameter {
 	}
 }
 
+// WithHeaders allows headers to be set on the request. Multiple calls using the same header name
+// will overwrite existing header values.
 func WithHeaders(headers map[string]string) RequestParameter {
 	return func(opts *RequestParameters) {
 		if opts.headers == nil {
@@ -83,4 +92,22 @@ func MustInterceptRequestBody(r *http.Request) []byte {
 		panic(err)
 	}
 	return b
+}
+
+// NewRequest builds a new request based on the given Method, full URL, body and optional functional option parameters.
+func NewRequest(ctx context.Context, method string, rawURL string, body io.Reader, parameters ...RequestParameter) (*http.Request, error) {
+	reqParams := NewRequestParameters(parameters...)
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return nil, err
+	}
+	if encodedQP := reqParams.queryParams.Encode(); encodedQP != "" {
+		parsedURL.RawQuery += encodedQP
+	}
+	req, err := http.NewRequestWithContext(ctx, method, parsedURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqParams.headers
+	return req, nil
 }

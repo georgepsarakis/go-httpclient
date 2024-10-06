@@ -41,7 +41,7 @@ func TestClient_Get_JSON(t *testing.T) {
 	httpmock.RegisterMatcherResponder(
 		http.MethodGet,
 		"https://api.github.com/repos/georgepsarakis/go-httpclient",
-		httpmock.HeaderIs("Content-Type", "application/json"),
+		httpmock.HeaderIs("Content-Type", "application/json; charset=utf-8"),
 		responder,
 	)
 	url := "/repos/georgepsarakis/go-httpclient"

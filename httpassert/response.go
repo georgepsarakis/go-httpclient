@@ -11,6 +11,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// ResponseEqual compares to http.Response objects for equality.
+// Individual field comparisons are enabled by the non-nil checks.
+// For example, if the expected `http.Response.Header` field is `nil`,
+// no comparison with actual `http.Response.Header` takes place.
+// JSON responses are autodetected and the response body payloads will be compared
+// as valid JSON using `assert.JSONEq`.
 func ResponseEqual(t *testing.T, actual, expected *http.Response) {
 	t.Helper()
 
@@ -44,6 +50,7 @@ func ResponseEqual(t *testing.T, actual, expected *http.Response) {
 	}
 }
 
+// SuccessfulJSONResponseEqual is a shorthand for asserting the JSON body contents for a successful response.
 func SuccessfulJSONResponseEqual(t *testing.T, actual *http.Response, body []byte) {
 	t.Helper()
 	ResponseEqual(t, actual, &http.Response{

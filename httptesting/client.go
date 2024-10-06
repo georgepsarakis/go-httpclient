@@ -53,6 +53,7 @@ func (c *Client) Delete(ctx context.Context, url string, parameters ...httpclien
 	return c.Client.Delete(ctx, url, parameters...)
 }
 
+// WithBaseURL sets the base URL setting for the underlying `httpclient.Client`.
 func (c *Client) WithBaseURL(baseURL string) (*Client, error) {
 	_, err := c.Client.WithBaseURL(baseURL)
 	if err != nil {
@@ -115,15 +116,18 @@ func (r *MockRequest) Register() {
 		r.responder)
 }
 
+// String provides a representation of the mock request. Only used for debugging purposes.
 func (r *MockRequest) String() string {
 	return fmt.Sprintf("MockRequest: [%s] %s", r.req.Method, r.req.URL.String())
 }
 
+// Responder provides access to the current responder for inspection or direct operations.
 func (r *MockRequest) Responder(resp httpmock.Responder) *MockRequest {
 	r.responder = resp
 	return r
 }
 
+// RespondWithJSON will configure a JSON response with the given status code.
 func (r *MockRequest) RespondWithJSON(statusCode int, body string) *MockRequest {
 	responder, err := httpmock.NewJsonResponder(statusCode, json.RawMessage(body))
 	require.NoError(r.t, err)
@@ -131,6 +135,8 @@ func (r *MockRequest) RespondWithJSON(statusCode int, body string) *MockRequest 
 	return r
 }
 
+// RespondWithHeaders configures the response headers. It can be used multiple times in order to pass different headers.
+// If the header key already exists it will be overwritten.
 func (r *MockRequest) RespondWithHeaders(respHeaders map[string]string) *MockRequest {
 	h := http.Header{}
 	for k, v := range respHeaders {
