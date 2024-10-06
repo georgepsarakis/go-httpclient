@@ -61,6 +61,11 @@ func (c *Client) WithBaseURL(baseURL string) (*Client, error) {
 	return c, nil
 }
 
+func (c *Client) WithDefaultHeaders(headers map[string]string) *Client {
+	c.Client = c.Client.WithDefaultHeaders(headers)
+	return c
+}
+
 // HTTPMock exposes the httpmock.MockTransport instance for advanced usage.
 func (c *Client) HTTPMock() *httpmock.MockTransport {
 	return c.mock

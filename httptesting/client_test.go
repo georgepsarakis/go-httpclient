@@ -31,6 +31,7 @@ func TestClient_Get(t *testing.T) {
 			Method: http.MethodGet,
 			Header: reqHeaders,
 			URL:    httpassert.URLFromString(t, requestURL+"?test=1"),
+			Proto:  "HTTP/1.1",
 		},
 		Header: http.Header{"Content-Type": []string{"application/json"}},
 		Body:   io.NopCloser(strings.NewReader(`{"name": "hello", "surname": "world"}`)),
@@ -52,16 +53,18 @@ func TestClient_Head(t *testing.T) {
 		httpclient.WithQueryParameters(map[string]string{"test": "1"}))
 	require.NoError(t, err)
 	reqHeaders := http.Header{}
-	reqHeaders.Set("Accept", "application/json")
+	reqHeaders.Set("Content-Type", "application/json")
 	httpassert.ResponseEqual(t, resp, &http.Response{
 		StatusCode: http.StatusOK,
 		Request: &http.Request{
 			Method: http.MethodHead,
 			Header: reqHeaders,
 			URL:    httpassert.URLFromString(t, requestURL+"?test=1"),
+			Proto:  "HTTP/1.1",
 		},
 		Header: http.Header{"Content-Type": []string{"application/json"}},
-		Body:   io.NopCloser(strings.NewReader(`{"name": "hello", "surname": "world"}`)),
 	})
-	httpassert.SuccessfulJSONResponseEqual(t, resp, []byte(`{"name": "hello", "surname": "world"}`))
+	httpassert.ResponseEqual(t, resp, &http.Response{
+		StatusCode: http.StatusOK,
+	})
 }

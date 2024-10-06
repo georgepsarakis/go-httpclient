@@ -3,8 +3,8 @@ package httpassert
 import (
 	"bytes"
 	"io"
+	"mime"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,7 +27,8 @@ func ResponseEqual(t *testing.T, actual, expected *http.Response) {
 		actual.Body.Close()
 		// Restore the body stream in order to allow multiple assertions
 		actual.Body = io.NopCloser(bytes.NewBuffer(actualBody))
-		if strings.HasPrefix(actual.Header.Get("Content-Type"), "application/json") {
+		mediatype, _, err := mime.ParseMediaType(actual.Header.Get("Content-Type"))
+		if mediatype == "application/json" {
 			assert.JSONEq(t, string(expectedBody), string(actualBody))
 		} else {
 			assert.Equal(t, string(expectedBody), string(actualBody))
@@ -36,6 +37,8 @@ func ResponseEqual(t *testing.T, actual, expected *http.Response) {
 	if expected.Request != nil {
 		assert.Equal(t, expected.Request.URL, actual.Request.URL)
 		assert.Equal(t, expected.Request.Method, actual.Request.Method)
+		assert.Equal(t, expected.Request.Proto, actual.Request.Proto)
+		assert.Equal(t, expected.Request.Header, actual.Request.Header)
 	}
 }
 

@@ -1,7 +1,9 @@
 package httpassert
 
 import (
+	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,6 +45,48 @@ func TestResponseEqual(t *testing.T) {
 				},
 			},
 			want: assert.False,
+		},
+		{
+			name: "body payload matches",
+			args: args{
+				t: &testing.T{},
+				actual: &http.Response{
+					StatusCode: http.StatusOK,
+					Header: http.Header{
+						"Content-Type": []string{"application/json"},
+					},
+					Body: io.NopCloser(strings.NewReader(`{"hello": "world"}`)),
+				},
+				expected: &http.Response{
+					StatusCode: http.StatusOK,
+					Header: http.Header{
+						"Content-Type": []string{"application/json"},
+					},
+					Body: io.NopCloser(strings.NewReader(`{"hello": "world"}`)),
+				},
+			},
+			want: assert.False,
+		},
+		{
+			name: "body payload does not match",
+			args: args{
+				t: &testing.T{},
+				actual: &http.Response{
+					StatusCode: http.StatusOK,
+					Header: http.Header{
+						"Content-Type": []string{"application/json"},
+					},
+					Body: io.NopCloser(strings.NewReader(`{"hello": "worl"}`)),
+				},
+				expected: &http.Response{
+					StatusCode: http.StatusOK,
+					Header: http.Header{
+						"Content-Type": []string{"application/json"},
+					},
+					Body: io.NopCloser(strings.NewReader(`{"hello": "world"}`)),
+				},
+			},
+			want: assert.True,
 		},
 	}
 	for _, tt := range tests {

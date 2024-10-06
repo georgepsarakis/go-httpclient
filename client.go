@@ -22,6 +22,8 @@ func New() *Client {
 	return NewWithTransport(http.DefaultTransport)
 }
 
+// NewWithTransport creates a new Client object that uses the given http.Roundtripper
+// as a transport in the underlying net/http Client.
 func NewWithTransport(transport http.RoundTripper) *Client {
 	if transport == nil {
 		panic("transport must be non-nil")
@@ -46,6 +48,9 @@ func (c *Client) WithBaseTransport(base http.RoundTripper) *Client {
 	return c
 }
 
+// WithDefaultHeaders adds the given name-value pairs as request headers on every Request.
+// Headers can be added or overridden using the WithHeaders functional option parameter
+// on a per-request basis.
 func (c *Client) WithDefaultHeaders(headers map[string]string) *Client {
 	if c.defaultHeaders == nil {
 		c.defaultHeaders = make(map[string]string)
@@ -101,6 +106,7 @@ func (c *Client) prepareRequest(ctx context.Context, method string, rawURL strin
 	return req, nil
 }
 
+// Head sends a HEAD Request.
 func (c *Client) Head(ctx context.Context, url string, parameters ...RequestParameter) (*http.Response, error) {
 	req, err := c.prepareRequest(ctx, http.MethodHead, url, nil, parameters...)
 	if err != nil {
