@@ -2,7 +2,6 @@ package httptesting
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,59 +15,23 @@ import (
 	"github.com/georgepsarakis/go-httpclient"
 )
 
-type HttpTestRequestParameter httpclient.RequestParameter
-
-type Client struct {
+type Mock struct {
 	*httpclient.Client
 	mock *httpmock.MockTransport
 	t    *testing.T
 }
 
-func NewClient(t *testing.T) *Client {
+func NewMock(t *testing.T) *Mock {
 	mt := httpmock.NewMockTransport()
-	return &Client{
+	return &Mock{
 		Client: httpclient.NewWithTransport(mt),
 		mock:   mt,
 		t:      t,
 	}
 }
 
-func (c *Client) Get(ctx context.Context, url string, parameters ...httpclient.RequestParameter) (*http.Response, error) {
-	return c.Client.Get(ctx, url, parameters...)
-}
-
-func (c *Client) Head(ctx context.Context, url string, parameters ...httpclient.RequestParameter) (*http.Response, error) {
-	return c.Client.Head(ctx, url, parameters...)
-}
-
-func (c *Client) Post(ctx context.Context, url string, body io.Reader, parameters ...httpclient.RequestParameter) (*http.Response, error) {
-	return c.Client.Post(ctx, url, body, parameters...)
-}
-
-func (c *Client) Patch(ctx context.Context, url string, body io.Reader, parameters ...httpclient.RequestParameter) (*http.Response, error) {
-	return c.Client.Patch(ctx, url, body, parameters...)
-}
-
-func (c *Client) Delete(ctx context.Context, url string, parameters ...httpclient.RequestParameter) (*http.Response, error) {
-	return c.Client.Delete(ctx, url, parameters...)
-}
-
-// WithBaseURL sets the base URL setting for the underlying `httpclient.Client`.
-func (c *Client) WithBaseURL(baseURL string) (*Client, error) {
-	_, err := c.Client.WithBaseURL(baseURL)
-	if err != nil {
-		return nil, err
-	}
-	return c, nil
-}
-
-func (c *Client) WithDefaultHeaders(headers map[string]string) *Client {
-	c.Client = c.Client.WithDefaultHeaders(headers)
-	return c
-}
-
-// HTTPMock exposes the httpmock.MockTransport instance for advanced usage.
-func (c *Client) HTTPMock() *httpmock.MockTransport {
+// Transport exposes the httpmock.MockTransport instance for advanced usage.
+func (c *Mock) Transport() *httpmock.MockTransport {
 	return c.mock
 }
 
@@ -82,7 +45,7 @@ type MockRequest struct {
 
 type MockResponse httpmock.Responder
 
-func (c *Client) NewMockRequest(method, url string, params ...httpclient.RequestParameter) *MockRequest {
+func (c *Mock) NewMockRequest(method, url string, params ...httpclient.RequestParameter) *MockRequest {
 	c.t.Helper()
 
 	req, err := http.NewRequest(method, url, nil)
@@ -146,7 +109,7 @@ func (r *MockRequest) RespondWithHeaders(respHeaders map[string]string) *MockReq
 	return r
 }
 
-func (c *Client) NewJSONBodyMatcher(body string) httpmock.MatcherFunc {
+func (c *Mock) NewJSONMatcher(body string) httpmock.MatcherFunc {
 	c.t.Helper()
 
 	return func(r *http.Request) bool {
@@ -161,7 +124,7 @@ func interceptBody(t *testing.T, req *http.Request) []byte {
 	t.Helper()
 	body, err := io.ReadAll(req.Body)
 	require.NoError(t, err)
-	req.Body.Close()
+	require.NoError(t, req.Body.Close())
 	req.Body = io.NopCloser(bytes.NewReader(body))
 	return body
 }

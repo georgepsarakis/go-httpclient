@@ -14,7 +14,7 @@ import (
 )
 
 func TestClient_Get(t *testing.T) {
-	c := NewClient(t)
+	c := NewMock(t)
 	requestURL := "http://localhost/p123"
 	c.Client.WithDefaultHeaders(map[string]string{"Content-Type": "application/json"})
 	c.NewMockRequest(http.MethodGet, requestURL+"?test=1").
@@ -40,7 +40,7 @@ func TestClient_Get(t *testing.T) {
 }
 
 func TestClient_Head(t *testing.T) {
-	c := NewClient(t)
+	c := NewMock(t)
 	requestURL := "http://localhost/p123"
 	c.Client.WithDefaultHeaders(map[string]string{"Content-Type": "application/json"})
 	c.NewMockRequest(http.MethodHead, requestURL+"?test=1",
@@ -70,8 +70,8 @@ func TestClient_Head(t *testing.T) {
 }
 
 func TestClient_WithBaseURL(t *testing.T) {
-	c := NewClient(t)
-	c, err := c.WithBaseURL("http://www.example.com/test")
+	c := NewMock(t)
+	_, err := c.WithBaseURL("http://www.example.com/test")
 	require.NoError(t, err)
 	require.Equal(t, "http://www.example.com/test", c.BaseURL())
 }

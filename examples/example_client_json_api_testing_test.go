@@ -15,19 +15,19 @@ import (
 )
 
 func TestGitHubSDK_GetUserByUsername(t *testing.T) {
-	testClient := httptesting.NewClient(t)
-	sdk := githubsdk.NewWithClient(testClient.Client)
-	testClient, err := testClient.WithBaseURL("https://test-api-github-com")
+	testClient := httptesting.NewMock(t)
+	mockHTTPClient := testClient.Client
+	sdk := githubsdk.NewWithClient(mockHTTPClient)
+	mockHTTPClient, err := mockHTTPClient.WithBaseURL("https://test-api-github-com")
 	require.NoError(t, err)
 
-	testClient.
-		NewMockRequest(
-			http.MethodGet,
-			"https://test-api-github-com/users/georgepsarakis",
-			httpclient.WithHeaders(map[string]string{
-				"x-github-api-version": "2022-11-28",
-				"accept":               "application/vnd.github+json",
-			})).
+	testClient.NewMockRequest(
+		http.MethodGet,
+		"https://test-api-github-com/users/georgepsarakis",
+		httpclient.WithHeaders(map[string]string{
+			"x-github-api-version": "2022-11-28",
+			"accept":               "application/vnd.github+json",
+		})).
 		RespondWithJSON(http.StatusOK, `
 	{
 	   "id": 963304,
